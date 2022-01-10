@@ -297,7 +297,7 @@ boolean Adafruit_FONA_LTE::setPreferredLTEMode(uint8_t mode) {
 boolean Adafruit_FONA_LTE::setOperatingBand(const char * mode, uint8_t band) {
   char cmdBuff[24];
 
-  sprintf(cmdBuff, "AT+CBANDCFG=\"%s\",%i", mode, band);
+  snprintf(cmdBuff, 24, "AT+CBANDCFG=\"%s\",%i", mode, band);
 
   return sendCheckReply(cmdBuff, ok_reply);
 }
@@ -327,7 +327,7 @@ boolean Adafruit_FONA::set_eDRX(uint8_t mode, uint8_t connType, char * eDRX_val)
 
   char auxStr[21];
 
-  sprintf(auxStr, "AT+CEDRXS=%i,%i,\"%s\"", mode, connType, eDRX_val);
+  snprintf(auxStr, 21, "AT+CEDRXS=%i,%i,\"%s\"", mode, connType, eDRX_val);
 
   return sendCheckReply(auxStr, ok_reply);
 }
@@ -358,7 +358,7 @@ boolean Adafruit_FONA::enablePSM(bool onoff, char * TAU_val, char * activeTime_v
     if (strlen(TAU_val) > 8) return false;
 
     char auxStr[35];
-    sprintf(auxStr, "AT+CPSMS=%i,,,\"%s\",\"%s\"", onoff, TAU_val, activeTime_val);
+    snprintf(auxStr, 35, "AT+CPSMS=%i,,,\"%s\",\"%s\"", onoff, TAU_val, activeTime_val);
 
     return sendCheckReply(auxStr, ok_reply);
 }
@@ -375,7 +375,7 @@ boolean Adafruit_FONA::setNetLED(bool onoff, uint8_t mode, uint16_t timer_on, ui
     if (mode > 0) {
       char auxStr[25];
 
-      sprintf(auxStr, "AT+SLEDS=%i,%i,%i", mode, timer_on, timer_off);
+      snprintf(auxStr, 25, "AT+SLEDS=%i,%i,%i", mode, timer_on, timer_off);
 
       return sendCheckReply(auxStr, ok_reply);
     }
@@ -1857,7 +1857,7 @@ boolean Adafruit_FONA::postData(const char *request_type, const char *URL, const
   // Specify URL
   char urlBuff[strlen(URL) + 22];
 
-  sprintf(urlBuff, "AT+HTTPPARA=\"URL\",\"%s\"", URL);
+  snprintf(urlBuff, strlen(URL)+22, "AT+HTTPPARA=\"URL\",\"%s\"", URL);
 
   if (! sendCheckReply(urlBuff, ok_reply, 10000))
     return false;
@@ -1876,7 +1876,7 @@ boolean Adafruit_FONA::postData(const char *request_type, const char *URL, const
     if (strlen(token) > 0) {
       char tokenStr[strlen(token) + 55];
 
-      sprintf(tokenStr, "AT+HTTPPARA=\"USERDATA\",\"Authorization: Bearer %s\"", token);
+      snprintf(tokenStr, strlen(token)+55, "AT+HTTPPARA=\"USERDATA\",\"Authorization: Bearer %s\"", token);
 
       if (! sendCheckReply(tokenStr, ok_reply, 10000))
         return false;
@@ -1884,7 +1884,7 @@ boolean Adafruit_FONA::postData(const char *request_type, const char *URL, const
 
     char dataBuff[sizeof(bodylen) + 20];
 
-    sprintf(dataBuff, "AT+HTTPDATA=%lu,10000", (long unsigned int)bodylen);
+    snprintf(dataBuff, sizeof(bodylen)+20, "AT+HTTPDATA=%lu,10000", (long unsigned int)bodylen);
     if (! sendCheckReply(dataBuff, "DOWNLOAD", 10000))
       return false;
 
@@ -1960,7 +1960,7 @@ boolean Adafruit_FONA::postData(const char *server, uint16_t port, const char *c
     connTypeNum = 2;
   }
 
-  sprintf(auxStr, "AT+CHTTPSOPSE=\"%s\",%d,%d", server, port, connTypeNum);
+  snprintf(auxStr, 200, "AT+CHTTPSOPSE=\"%s\",%d,%d", server, port, connTypeNum);
 
   if (_type == SIM7500 || _type == SIM7600) {
     // sendParseReply(auxStr, F("+CHTTPSOPSE: "), &reply);
@@ -1984,7 +1984,7 @@ boolean Adafruit_FONA::postData(const char *server, uint16_t port, const char *c
   delay(1000);
 
   // Send data to server
-  sprintf(auxStr, "AT+CHTTPSSEND=%i", strlen(URL) + strlen(body)); // URL and body must include \r\n as needed
+  snprintf(auxStr, 200, "AT+CHTTPSSEND=%i", strlen(URL) + strlen(body)); // URL and body must include \r\n as needed
 
   if (! sendCheckReply(auxStr, ">", 10000))
     return false;
@@ -2045,7 +2045,7 @@ boolean Adafruit_FONA::postData(const char *server, uint16_t port, const char *c
   sendParseReply(F("AT+CHTTPSRECV?"), F("+CHTTPSRECV: LEN,"), &replyLen);
 
   // Get server response content
-  sprintf(auxStr, "AT+CHTTPSRECV=%i", replyLen);
+  snprintf(auxStr, 200, "AT+CHTTPSRECV=%i", replyLen);
   getReply(auxStr, 2000);
 
   if (replyLen > 0) {
@@ -2078,7 +2078,7 @@ boolean Adafruit_FONA_LTE::HTTP_connect(const char *server) {
 
   sendCheckReply(F("AT+SHDISC"), ok_reply, 10000); // Disconnect HTTP
 
-  sprintf(urlBuff, "AT+SHCONF=\"URL\",\"%s\"", server);
+  snprintf(urlBuff, 100, "AT+SHCONF=\"URL\",\"%s\"", server);
 
   if (! sendCheckReply(urlBuff, ok_reply, 10000))
     return false;
@@ -2109,7 +2109,7 @@ boolean Adafruit_FONA_LTE::HTTP_GET(const char *URI) {
   // Then use fona.HTTP_connect() to connect to the server first
   char cmdBuff[150];
 
-  sprintf(cmdBuff, "AT+SHREQ=\"%s\",1", URI);
+  snprintf(cmdBuff, 150, "AT+SHREQ=\"%s\",1", URI);
 
   sendCheckReply(cmdBuff, ok_reply, 10000);
 
@@ -2148,7 +2148,7 @@ boolean Adafruit_FONA_LTE::HTTP_POST(const char *URI, const char *body, uint8_t 
 
   // Example 2 in HTTP(S) app note for SIM7070 POST request
   if (_type == SIM7070) {
-    sprintf(cmdBuff, "AT+SHBOD=%i,10000", bodylen);
+    snprintf(cmdBuff, 150, "AT+SHBOD=%i,10000", bodylen);
     getReply(cmdBuff, 10000);
     if (strstr(replybuffer, ">") == NULL) return false; // Wait for ">" to send message
     sendCheckReply(body, ok_reply, 2000);
@@ -2156,12 +2156,12 @@ boolean Adafruit_FONA_LTE::HTTP_POST(const char *URI, const char *body, uint8_t 
     // if (! strcmp(replybuffer, "OK") != 0) return false; // Now send the JSON body
   }
   else { // For ex, SIM7000
-    sprintf(cmdBuff, "AT+SHBOD=\"%s\",%i", body, bodylen);
+    snprintf(cmdBuff, 150, "AT+SHBOD=\"%s\",%i", body, bodylen);
     if (! sendCheckReply(cmdBuff, ok_reply, 10000)) return false;
   }
   
   memset(cmdBuff, 0, sizeof(cmdBuff)); // Clear URI char array
-  sprintf(cmdBuff, "AT+SHREQ=\"%s\",3", URI);
+  snprintf(cmdBuff, 150, "AT+SHREQ=\"%s\",3", URI);
 
   if (! sendCheckReply(cmdBuff, ok_reply, 10000)) return false;
 
@@ -2202,27 +2202,27 @@ boolean Adafruit_FONA::FTP_Connect(const char* serverIP, uint16_t port, const ch
 
   sendCheckReply(F("AT+FTPCID=1"), ok_reply, 10000); // Don't return false in case this is a reconnect attempt
 
-  sprintf(auxStr, "AT+FTPSERV=\"%s\"", serverIP);
+  snprintf(auxStr, 100, "AT+FTPSERV=\"%s\"", serverIP);
 
   if (! sendCheckReply(auxStr, ok_reply, 10000))
     return false;
 
   if (port != 21) {
-    sprintf(auxStr, "AT+FTPPORT=%i", port);
+    snprintf(auxStr, 100, "AT+FTPPORT=%i", port);
 
     if (! sendCheckReply(auxStr, ok_reply, 10000))
       return false;
   }
 
   if (strlen(username) > 0) {
-    sprintf(auxStr, "AT+FTPUN=\"%s\"", username);
+    snprintf(auxStr, 100, "AT+FTPUN=\"%s\"", username);
 
     if (! sendCheckReply(auxStr, ok_reply, 10000))
       return false;
   }
 
   if (strlen(password) > 0) {
-    sprintf(auxStr, "AT+FTPPW=\"%s\"", password);
+    snprintf(auxStr, 100, "AT+FTPPW=\"%s\"", password);
 
     if (! sendCheckReply(auxStr, ok_reply, 10000))
       return false;
@@ -2241,17 +2241,17 @@ boolean Adafruit_FONA::FTP_Quit() {
 boolean Adafruit_FONA::FTP_Rename(const char* filePath, const char* oldName, const char* newName) {
   char auxStr[50];
 
-  sprintf(auxStr, "AT+FTPGETPATH=\"%s\"", filePath);
+  snprintf(auxStr, 50, "AT+FTPGETPATH=\"%s\"", filePath);
 
   if (! sendCheckReply(auxStr, ok_reply, 10000))
     return false;
 
-  sprintf(auxStr, "AT+FTPGETNAME=\"%s\"", oldName);
+  snprintf(auxStr, 50, "AT+FTPGETNAME=\"%s\"", oldName);
 
   if (! sendCheckReply(auxStr, ok_reply, 10000))
     return false;
 
-  sprintf(auxStr, "AT+FTPPUTNAME=\"%s\"", newName);
+  snprintf(auxStr, 50, "AT+FTPPUTNAME=\"%s\"", newName);
 
   if (! sendCheckReply(auxStr, ok_reply, 10000))
     return false;
@@ -2267,12 +2267,12 @@ boolean Adafruit_FONA::FTP_Rename(const char* filePath, const char* oldName, con
 boolean Adafruit_FONA::FTP_Delete(const char* fileName, const char* filePath) {
   char auxStr[50];
 
-  sprintf(auxStr, "AT+FTPGETNAME=\"%s\"", fileName);
+  snprintf(auxStr, 50, "AT+FTPGETNAME=\"%s\"", fileName);
 
   if (! sendCheckReply(auxStr, ok_reply, 10000))
     return false;
 
-  sprintf(auxStr, "AT+FTPGETPATH=\"%s\"", filePath);
+  snprintf(auxStr, 50, "AT+FTPGETPATH=\"%s\"", filePath);
 
   if (! sendCheckReply(auxStr, ok_reply, 10000))
     return false;
@@ -2290,12 +2290,12 @@ boolean Adafruit_FONA::FTP_MDTM(const char* fileName, const char* filePath, uint
                                 uint8_t* month, uint8_t* day, uint8_t* hour, uint8_t* minute, uint8_t* second) {
   char auxStr[50];
 
-  sprintf(auxStr, "AT+FTPGETNAME=\"%s\"", fileName);
+  snprintf(auxStr, 50, "AT+FTPGETNAME=\"%s\"", fileName);
 
   if (! sendCheckReply(auxStr, ok_reply, 10000))
     return false;
 
-  sprintf(auxStr, "AT+FTPGETPATH=\"%s\"", filePath);
+  snprintf(auxStr, 50, "AT+FTPGETPATH=\"%s\"", filePath);
 
   if (! sendCheckReply(auxStr, ok_reply, 10000))
     return false;
@@ -2340,12 +2340,12 @@ const char * Adafruit_FONA::FTP_GET(const char* fileName, const char* filePath, 
   char auxStr[100];
   const char *err = "error";
 
-  sprintf(auxStr, "AT+FTPGETNAME=\"%s\"", fileName);
+  snprintf(auxStr, 100, "AT+FTPGETNAME=\"%s\"", fileName);
 
   if (! sendCheckReply(auxStr, ok_reply, 10000))
     return err;
 
-  sprintf(auxStr, "AT+FTPGETPATH=\"%s\"", filePath);
+  snprintf(auxStr, 100, "AT+FTPGETPATH=\"%s\"", filePath);
 
   if (! sendCheckReply(auxStr, ok_reply, 10000))
     return err;
@@ -2356,12 +2356,12 @@ const char * Adafruit_FONA::FTP_GET(const char* fileName, const char* filePath, 
   if (! expectReply(F("+FTPGET: 1,1"))) return err;
 
   if (numBytes <= 1024) {
-    sprintf(auxStr, "AT+FTPGET=2,%i", numBytes);
+    snprintf(auxStr, 100, "AT+FTPGET=2,%i", numBytes);
     getReply(auxStr, 10000);
     if (strstr(replybuffer, "+FTPGET: 2,") == NULL) return err;
   } 
   else {
-    sprintf(auxStr, "AT+FTPEXTGET=2,%i,10000", numBytes);
+    snprintf(auxStr, 100, "AT+FTPEXTGET=2,%i,10000", numBytes);
     getReply(auxStr, 10000);
     if (strstr(replybuffer, "+FTPEXTGET: 2,") == NULL) return err;
   }
@@ -2379,12 +2379,12 @@ const char * Adafruit_FONA::FTP_GET(const char* fileName, const char* filePath, 
 boolean Adafruit_FONA::FTP_PUT(const char* fileName, const char* filePath, char* content, size_t numBytes) {
   char auxStr[100];
 
-  sprintf(auxStr, "AT+FTPPUTNAME=\"%s\"", fileName);
+  snprintf(auxStr, 100,"AT+FTPPUTNAME=\"%s\"", fileName);
 
   if (! sendCheckReply(auxStr, ok_reply, 10000))
     return false;
 
-  sprintf(auxStr, "AT+FTPPUTPATH=\"%s\"", filePath);
+  snprintf(auxStr, 100, "AT+FTPPUTPATH=\"%s\"", filePath);
 
   if (! sendCheckReply(auxStr, ok_reply, 10000))
     return false;
@@ -2402,7 +2402,7 @@ boolean Adafruit_FONA::FTP_PUT(const char* fileName, const char* filePath, char*
         return false;
 
       if (remBytes >= 300000) {
-        sprintf(auxStr, "AT+FTPEXTPUT=2,%i,300000,10000", offset); // Extended PUT handles up to 300k
+        snprintf(auxStr, 100, "AT+FTPEXTPUT=2,%i,300000,10000", offset); // Extended PUT handles up to 300k
         offset = offset + 300000;
         remBytes = remBytes - 300000;
 
@@ -2410,7 +2410,7 @@ boolean Adafruit_FONA::FTP_PUT(const char* fileName, const char* filePath, char*
         if (strlen(sendArray) > 300000) strcpy(sendArray, sendArray - 300000); // Chop off the end
       }
       else {
-        sprintf(auxStr, "AT+FTPEXTPUT=2,%i,%i,10000", offset, remBytes);
+        snprintf(auxStr, 100, "AT+FTPEXTPUT=2,%i,%i,10000", offset, remBytes);
         remBytes = 0;
       }
 
@@ -2440,8 +2440,8 @@ boolean Adafruit_FONA::FTP_PUT(const char* fileName, const char* filePath, char*
     uint16_t remBytes = numBytes;
 
     while (remBytes > 0) {
-      if (remBytes > maxlen) sprintf(auxStr, "AT+FTPPUT=2,%i", maxlen);
-      else sprintf(auxStr, "AT+FTPPUT=2,%i", remBytes);
+      if (remBytes > maxlen) snprintf(auxStr, 100, "AT+FTPPUT=2,%i", maxlen);
+      else snprintf(auxStr, 100, "AT+FTPPUT=2,%i", remBytes);
 
       getReply(auxStr);
 
@@ -2685,15 +2685,15 @@ boolean Adafruit_FONA::MQTTdisconnect(void) {
 // Parameter tags can be "CLIENTID", "URL", "KEEPTIME", "CLEANSS", "USERNAME",
 // "PASSWORD", "QOS", "TOPIC", "MESSAGE", or "RETAIN"
 boolean Adafruit_FONA_LTE::MQTT_setParameter(const char* paramTag, const char* paramValue, uint16_t port) {
-  char cmdStr[50];
+  char cmdStr[100];
 
   if (strcmp(paramTag, "CLIENTID") == 0 || strcmp(paramTag, "URL") == 0 || strcmp(paramTag, "TOPIC") == 0 || strcmp(paramTag, "MESSAGE") == 0) {
-    if (port == 0) sprintf(cmdStr, "AT+SMCONF=\"%s\",\"%s\"", paramTag, paramValue); // Quoted paramValue
-    else sprintf(cmdStr, "AT+SMCONF=\"%s\",\"%s\",\"%i\"", paramTag, paramValue, port);
+    if (port == 0) snprintf(cmdStr, 100, "AT+SMCONF=\"%s\",\"%s\"", paramTag, paramValue); // Quoted paramValue
+    else snprintf(cmdStr, 100, "AT+SMCONF=\"%s\",\"%s\",\"%i\"", paramTag, paramValue, port);
     if (! sendCheckReply(cmdStr, ok_reply)) return false;
   }
   else {
-    sprintf(cmdStr, "AT+SMCONF=\"%s\",%s", paramTag, paramValue); // Unquoted paramValue
+    snprintf(cmdStr, 100, "AT+SMCONF=\"%s\",%s", paramTag, paramValue); // Unquoted paramValue
     if (! sendCheckReply(cmdStr, ok_reply)) return false;
   }
   
@@ -2716,7 +2716,7 @@ boolean Adafruit_FONA_LTE::MQTT_connectionStatus(void) {
 // QoS can be from 0-2
 boolean Adafruit_FONA_LTE::MQTT_subscribe(const char* topic, byte QoS) {
   char cmdStr[64];
-  sprintf(cmdStr, "AT+SMSUB=\"%s\",%i", topic, QoS);
+  snprintf(cmdStr, 64, "AT+SMSUB=\"%s\",%i", topic, QoS);
 
   if (! sendCheckReply(cmdStr, ok_reply)) return false;
   return true;
@@ -2725,7 +2725,7 @@ boolean Adafruit_FONA_LTE::MQTT_subscribe(const char* topic, byte QoS) {
 // Unsubscribe from specified MQTT topic
 boolean Adafruit_FONA_LTE::MQTT_unsubscribe(const char* topic) {
   char cmdStr[64];
-  sprintf(cmdStr, "AT+SMUNSUB=\"%s\"", topic);
+  snprintf(cmdStr, 64, "AT+SMUNSUB=\"%s\"", topic);
   if (! sendCheckReply(cmdStr, ok_reply)) return false;
   return true;
 }
@@ -2736,7 +2736,7 @@ boolean Adafruit_FONA_LTE::MQTT_unsubscribe(const char* topic) {
 // Server hold message flag can be 0 or 1
 boolean Adafruit_FONA_LTE::MQTT_publish(const char* topic, const char* message, uint16_t contentLength, byte QoS, byte retain) {
   char cmdStr[40];
-  sprintf(cmdStr, "AT+SMPUB=\"%s\",%i,%i,%i", topic, contentLength, QoS, retain);
+  snprintf(cmdStr, 40, "AT+SMPUB=\"%s\",%i,%i,%i", topic, contentLength, QoS, retain);
 
   getReply(cmdStr, 2000);
   if (strstr(replybuffer, ">") == NULL) return false; // Wait for "> " to send message
@@ -3131,7 +3131,7 @@ boolean Adafruit_FONA::HTTP_ssl(boolean onoff) {
 boolean Adafruit_FONA_LTE::HTTP_addHeader(const char *type, const char *value, uint16_t maxlen) {
   char cmdStr[2*maxlen+17];
 
-  sprintf(cmdStr, "AT+SHAHEAD=\"%s\",\"%s\"", type, value);
+  snprintf(cmdStr, 2*maxlen+17, "AT+SHAHEAD=\"%s\",\"%s\"", type, value);
 
   if (! sendCheckReply(cmdStr, ok_reply, 10000))
     return false;
@@ -3141,7 +3141,7 @@ boolean Adafruit_FONA_LTE::HTTP_addHeader(const char *type, const char *value, u
 boolean Adafruit_FONA_LTE::HTTP_addPara(const char *key, const char *value, uint16_t maxlen) {
   char cmdStr[2*maxlen+16];
 
-  sprintf(cmdStr, "AT+SHPARA=\"%s\",\"%s\"", key, value);
+  snprintf(cmdStr, 2*maxlen+16, "AT+SHPARA=\"%s\",\"%s\"", key, value);
 
   if (! sendCheckReply(cmdStr, ok_reply, 10000))
     return false;
