@@ -2735,8 +2735,8 @@ boolean Adafruit_FONA_LTE::MQTT_unsubscribe(const char* topic) {
 // QoS can be from 0-2
 // Server hold message flag can be 0 or 1
 boolean Adafruit_FONA_LTE::MQTT_publish(const char* topic, const char* message, uint16_t contentLength, byte QoS, byte retain) {
-  char cmdStr[40];
-  snprintf(cmdStr, 40, "AT+SMPUB=\"%s\",%i,%i,%i", topic, contentLength, QoS, retain);
+  char cmdStr[80];
+  snprintf(cmdStr, 80, "AT+SMPUB=\"%s\",%i,%i,%i", topic, contentLength, QoS, retain);
 
   getReply(cmdStr, 2000);
   if (strstr(replybuffer, ">") == NULL) return false; // Wait for "> " to send message
