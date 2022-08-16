@@ -2283,7 +2283,7 @@ boolean Adafruit_FONA_LTE::HTTP_GET(const char *URI) {
 boolean Adafruit_FONA_LTE::HTTP_POST(const char *URI, const char *body, uint8_t bodylen) {
   // Use fona.HTTP_addHeader() as needed before using this function
   // Then use fona.HTTP_connect() to connect to the server first
-  bool status=true;
+  bool result=true;
   #define MAX_BODY_LENGTH 1024
   char cmdBuff[MAX_BODY_LENGTH]; // Make sure this is large enough for URI
 
@@ -2293,7 +2293,7 @@ boolean Adafruit_FONA_LTE::HTTP_POST(const char *URI, const char *body, uint8_t 
     getReply(cmdBuff, 10000);
     if (strstr(replybuffer, ">") == NULL) 
     {
-      status = false;
+      result = false;
       goto DISCONNECT;
       // Wait for ">" to send message
     }
@@ -2305,7 +2305,7 @@ boolean Adafruit_FONA_LTE::HTTP_POST(const char *URI, const char *body, uint8_t 
     snprintf(cmdBuff, MAX_BODY_LENGTH, "AT+SHBOD=\"%s\",%i", body, bodylen);
     if (! sendCheckReply(cmdBuff, ok_reply, 10000))
     {
-      status = false;
+      result = false;
       goto DISCONNECT;
     } 
   }
@@ -2315,7 +2315,7 @@ boolean Adafruit_FONA_LTE::HTTP_POST(const char *URI, const char *body, uint8_t 
 
   if (! sendCheckReply(cmdBuff, ok_reply, 10000))
   {
-    status = false;
+    result = false;
     goto DISCONNECT; 
   } 
 
@@ -2329,13 +2329,13 @@ boolean Adafruit_FONA_LTE::HTTP_POST(const char *URI, const char *body, uint8_t 
 
   if (! parseReply(F("+SHREQ: \"POST\""), &status, ',', 1))
   {
-    status = false;
+    result = false;
     goto DISCONNECT;
 
   }
   if (! parseReply(F("+SHREQ: \"POST\""), &datalen, ',', 2))
   {
-    status = false;
+    result = false;
     goto DISCONNECT;
   }
 
@@ -2344,7 +2344,7 @@ boolean Adafruit_FONA_LTE::HTTP_POST(const char *URI, const char *body, uint8_t 
 
   if (status != 200)
   {
-    status = false;
+    result = false;
     goto DISCONNECT;
   }  
 
@@ -2358,7 +2358,7 @@ boolean Adafruit_FONA_LTE::HTTP_POST(const char *URI, const char *body, uint8_t 
 DISCONNECT:
   sendCheckReply(F("AT+SHDISC"), ok_reply, 10000); // Disconnect HTTP
 
-  return status;
+  return result;
 }
 
 /********* FTP FUNCTIONS  ************************************/
