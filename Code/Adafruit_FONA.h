@@ -382,6 +382,7 @@ class Adafruit_FONA_LTE : public Adafruit_FONA {
   boolean MQTT_dataFormatHex(bool yesno);
 
   // HTTP
+  boolean HTTP_ssl(char * ca_cert);
   boolean HTTP_connect(const char *server);
   boolean HTTP_addHeader(const char *type, const char *value, uint16_t maxlen); // max length of value
   boolean HTTP_addPara(const char *key, const char *value, uint16_t maxlen); // max length of value

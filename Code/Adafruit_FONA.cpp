@@ -3298,6 +3298,10 @@ boolean Adafruit_FONA::HTTP_ssl(boolean onoff) {
   return sendCheckReply(F("AT+HTTPSSL="), onoff ? 1 : 0, ok_reply);
 }
 
+boolean Adafruit_FONA_LTE::HTTP_ssl(char * ca_cert) {
+  return sendCheckReply(F("AT+SHSSL=1,\"%s\""), ca_cert);
+}
+
 boolean Adafruit_FONA_LTE::HTTP_addHeader(const char *type, const char *value, uint16_t maxlen) {
   char cmdStr[2*maxlen+17];
 
