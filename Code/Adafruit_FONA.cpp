@@ -2327,22 +2327,31 @@ boolean Adafruit_FONA_LTE::HTTP_POST(const char *URI, const char *body, uint8_t 
   readline(10000);
   DEBUG_PRINT("\t<--- "); DEBUG_PRINTLN(replybuffer);
 
+  uint16_t state;
+  if (parseReply(F("+SHSTATE:"), &state, ' ', 1))
+  {
+    if (state == 0)
+    {
+      result = false;
+      goto DISCONNECT;
+    }
+  }
   if (! parseReply(F("+SHREQ: \"POST\""), &status, ',', 1))
   {
-    result = false;
+    result = true; //no news is good news
     goto DISCONNECT;
 
   }
   if (! parseReply(F("+SHREQ: \"POST\""), &datalen, ',', 2))
   {
-    result = false;
+    result = true; //no news is good news
     goto DISCONNECT;
   }
 
   DEBUG_PRINT("HTTP status: "); DEBUG_PRINTLN(status);
   DEBUG_PRINT("Data length: "); DEBUG_PRINTLN(datalen);
 
-  if (status != 200)
+  if (status != 200 && status != 204)
   {
     result = false;
     goto DISCONNECT;
