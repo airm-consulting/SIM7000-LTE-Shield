@@ -179,11 +179,11 @@ boolean Adafruit_FONA::begin(Stream &port) {
 
 
 /********* Serial port ********************************************/
-boolean Adafruit_FONA::setBaudrate(uint16_t baud) {
+boolean Adafruit_FONA::setBaudrate(uint32_t baud) {
   return sendCheckReply(F("AT+IPREX="), baud, ok_reply);
 }
 
-boolean Adafruit_FONA_LTE::setBaudrate(uint16_t baud) {
+boolean Adafruit_FONA_LTE::setBaudrate(uint32_t baud) {
   return sendCheckReply(F("AT+IPR="), baud, ok_reply);
 }
 
@@ -390,7 +390,44 @@ boolean Adafruit_FONA::setNetLED(bool onoff, uint8_t mode, uint16_t timer_on, ui
 
 /********* SIM ***********************************************************/
 
-uint8_t Adafruit_FONA::unlockSIM(char *pin)
+// Return status of PIN requirement
+// -2 - Command returned with an error
+// -1 - Unknown status
+// 0 - MT is not pending for any password
+// 1 - MT is waiting SIM PIN to be given
+// 2 - MT is waiting for SIM PUK to be given
+// 3 - ME is waiting for phone to SIM card (antitheft)
+// 4 - ME is waiting for SIM PUK (antitheft)
+// 5 - PIN2, e.g. for editing the FDN book possible only if preceding Command was acknowledged with +CME ERROR:17
+// 6 - PUK2. Possible only if preceding Command was acknowledged with error +CME ERROR: 18.
+int8_t Adafruit_FONA::getPINStatus()
+{
+  getReply(F("AT+CPIN?"));
+
+  if (strncmp(replybuffer, "+CPIN: ", 7) != 0)
+    return FONA_SIM_ERROR;
+
+  char *returnVal = replybuffer + 7;
+
+  if (strcmp(returnVal, "READY") == 0)
+    return FONA_SIM_READY;
+  else if (strcmp(returnVal, "SIM PIN") == 0)
+    return FONA_SIM_PIN;
+  else if (strcmp(returnVal, "SIM PUK") == 0)
+    return FONA_SIM_PUK;
+  else if (strcmp(returnVal, "PH_SIM PIN") == 0)
+    return FONA_SIM_PH_PIN;
+  else if (strcmp(returnVal, "PH_SIM PUK") == 0)
+    return FONA_SIM_PH_PUK;
+  else if (strcmp(returnVal, "SIM PIN2") == 0)
+    return FONA_SIM_PIN2;
+  else if (strcmp(returnVal, "SIM PUK2") == 0)
+    return FONA_SIM_PUK2;
+
+  return FONA_SIM_UNKNOWN;
+}
+
+uint8_t Adafruit_FONA::unlockSIM(const char *pin)
 {
   char sendbuff[14] = "AT+CPIN=";
   sendbuff[8] = pin[0];
@@ -904,6 +941,27 @@ boolean Adafruit_FONA::enableNetworkTimeSync(boolean onoff) {
   return true;
 }
 */
+
+// Returns the status of the NTP module:
+// 1 Network time synchronization is successful
+// 61 Network Error
+// 62 DNS resolution error
+// 63 Connection Erro
+// 64 Service response error
+// 65 Service Response Timeout
+// see AT Command manual 1.04 p.204
+uint8_t Adafruit_FONA::getNTPstatus()
+{
+    if (! sendCheckReply(F("AT+CNTP"), ok_reply, 10000))
+      return 0;
+
+    uint16_t status;
+    readline(10000);
+    if (! parseReply(F("+CNTP: "), &status))
+      return 0;
+
+    return status;
+}
 
 boolean Adafruit_FONA::enableNTPTimeSync(boolean onoff, FONAFlashStringPtr ntpserver) {
   if (onoff) {
@@ -1716,6 +1774,86 @@ boolean Adafruit_FONA_3G::enableGPRS(boolean onoff) {
 }
 */
 
+// Returns type of the network the module is connected to
+// 0 no service
+// 1 GSM
+// 3 EGPRS
+// 7 LTE M1
+// 9 LTE NB
+// You can pass a string of sufficient length to receive a text copy as well
+// NOTE: Only tested on SIM7000E
+int8_t Adafruit_FONA::getNetworkType(char *typeStringBuffer, size_t bufferLength)
+{
+  uint16_t type;
+
+  if (! sendParseReply(F("AT+CNSMOD?"), F("+CNSMOD:"), &type, ',', 1))
+    return -1;
+  
+  if (typeStringBuffer != NULL)
+  {
+    switch (type)
+    {
+      case 0:
+        strncpy(typeStringBuffer, "no service", bufferLength);
+        break;
+      case 1:
+        strncpy(typeStringBuffer, "GSM", bufferLength);
+        break;
+      case 3:
+        strncpy(typeStringBuffer, "EGPRS", bufferLength);
+        break;
+      case 7:
+        strncpy(typeStringBuffer, "LTE M1", bufferLength);
+        break;
+      case 9:
+        strncpy(typeStringBuffer, "LTE NB", bufferLength);
+        break;
+      default:
+        strncpy(typeStringBuffer, "unknown", bufferLength);
+        break;
+    }
+  }
+
+  return (int8_t)type;
+} 
+
+// Returns bearer status
+// -1 Command returned with an error
+// 0 Bearer is connecting
+// 1 Bearer is connected
+// 2 Bearer is closing
+// 3 Bearer is closed
+int8_t Adafruit_FONA::getBearerStatus(void)
+{
+  uint16_t state;
+
+  if (! sendParseReply(F("AT+SAPBR=2,1"), F("+SAPBR: "), &state, ',', 1))
+    return -1;
+
+  return (int8_t)state;
+}
+
+// Query IP address and copy it into the passed buffer.
+// Buffer needs to be at least 16 chars long.
+// Returns true on success.
+boolean Adafruit_FONA::getIPv4(char *ipStringBuffer, size_t bufferLength)
+{
+  if (ipStringBuffer == NULL || bufferLength < 16)
+    return false;
+
+  getReply(F("AT+SAPBR=2,1"));
+
+  strtok(replybuffer, "\"");
+  char *temp = strtok(NULL, "\"");
+
+  if (temp == NULL)
+    return false;
+
+  strncpy(ipStringBuffer, temp, bufferLength);
+
+  return true;
+}
+
 void Adafruit_FONA::getNetworkInfo(void) {
   getReply(F("AT+CPSI?"));
   getReply(F("AT+COPS?"));
@@ -1865,11 +2003,11 @@ boolean Adafruit_FONA::postData(const char *request_type, const char *URL, const
   // Perform request based on specified request Type
   if (strlen(body) > 0) bodylen = strlen(body);
 
-  if (String(request_type) == "GET") {
+  if (strcmp(request_type, "GET") == 0) {
     if (! sendCheckReply(F("AT+HTTPACTION=0"), ok_reply, 10000))
       return false;
   }
-  else if (String(request_type) == "POST" && bodylen > 0) { // POST with content body
+  else if (strcmp(request_type, "POST") == 0 && bodylen > 0 ) { // POST with content body
     if (! sendCheckReply(F("AT+HTTPPARA=\"CONTENT\",\"application/json\""), ok_reply, 10000))
       return false;
 
@@ -1883,8 +2021,7 @@ boolean Adafruit_FONA::postData(const char *request_type, const char *URL, const
     }
 
     char dataBuff[sizeof(bodylen) + 20];
-
-    snprintf(dataBuff, sizeof(bodylen)+20, "AT+HTTPDATA=%lu,10000", (long unsigned int)bodylen);
+    snprintf(dataBuff, sizeof(bodylen)+20, "AT+HTTPDATA=%lu,9900", (long unsigned int)bodylen);
     if (! sendCheckReply(dataBuff, "DOWNLOAD", 10000))
       return false;
 
@@ -1896,11 +2033,11 @@ boolean Adafruit_FONA::postData(const char *request_type, const char *URL, const
     if (! sendCheckReply(F("AT+HTTPACTION=1"), ok_reply, 10000))
       return false;
   }
-  else if (String(request_type) == "POST" && bodylen == 0) { // POST with query parameters
+  else if (strcmp(request_type, "POST") == 0 && bodylen == 0) { // POST with query parameters
     if (! sendCheckReply(F("AT+HTTPACTION=1"), ok_reply, 10000))
       return false;
   }
-  else if (String(request_type) == "HEAD") {
+  else if (strcmp(request_type, "HEAD") == 0) {
     if (! sendCheckReply(F("AT+HTTPACTION=2"), ok_reply, 10000))
       return false;
   }
@@ -2090,12 +2227,14 @@ boolean Adafruit_FONA_LTE::HTTP_connect(const char *server) {
   sendCheckReply(F("AT+SHCONF=\"HEADERLEN\",350"), ok_reply, 10000); // Max 350 for SIM7070G
 
   // HTTP build
-  sendCheckReply(F("AT+SHCONN"), ok_reply, 10000);
+  sendCheckReply(F("AT+SHCONN"), ok_reply, 20000);
 
   // Get HTTP status
-  getReply(F("AT+SHSTATE?"));
-  readline();
-  if (strstr(replybuffer, "+SHSTATE: 1") == NULL) return false;
+  if (!sendCheckReply(F("AT+SHSTATE?"), F("+SHSTATE: 1"))) return false;
+
+  // getReply(F("AT+SHSTATE?"));
+  // readline();
+  // if (strstr(replybuffer, "+SHSTATE: 1") == NULL) return false;
   readline(); // Eat 'OK'
 
   // Clear HTTP header (HTTP header is appended)
@@ -2144,27 +2283,44 @@ boolean Adafruit_FONA_LTE::HTTP_GET(const char *URI) {
 boolean Adafruit_FONA_LTE::HTTP_POST(const char *URI, const char *body, uint8_t bodylen) {
   // Use fona.HTTP_addHeader() as needed before using this function
   // Then use fona.HTTP_connect() to connect to the server first
-  char cmdBuff[150]; // Make sure this is large enough for URI
+  bool status=true;
+  #define MAX_BODY_LENGTH 1024
+  char cmdBuff[MAX_BODY_LENGTH]; // Make sure this is large enough for URI
 
   // Example 2 in HTTP(S) app note for SIM7070 POST request
   if (_type == SIM7070) {
-    snprintf(cmdBuff, 150, "AT+SHBOD=%i,10000", bodylen);
+    snprintf(cmdBuff, MAX_BODY_LENGTH, "AT+SHBOD=%i,10000", bodylen);
     getReply(cmdBuff, 10000);
-    if (strstr(replybuffer, ">") == NULL) return false; // Wait for ">" to send message
+    if (strstr(replybuffer, ">") == NULL) 
+    {
+      status = false;
+      goto DISCONNECT;
+      // Wait for ">" to send message
+    }
     sendCheckReply(body, ok_reply, 2000);
 
     // if (! strcmp(replybuffer, "OK") != 0) return false; // Now send the JSON body
   }
   else { // For ex, SIM7000
-    snprintf(cmdBuff, 150, "AT+SHBOD=\"%s\",%i", body, bodylen);
-    if (! sendCheckReply(cmdBuff, ok_reply, 10000)) return false;
+    snprintf(cmdBuff, MAX_BODY_LENGTH, "AT+SHBOD=\"%s\",%i", body, bodylen);
+    if (! sendCheckReply(cmdBuff, ok_reply, 10000))
+    {
+      status = false;
+      goto DISCONNECT;
+    } 
   }
   
   memset(cmdBuff, 0, sizeof(cmdBuff)); // Clear URI char array
-  snprintf(cmdBuff, 150, "AT+SHREQ=\"%s\",3", URI);
+  snprintf(cmdBuff, MAX_BODY_LENGTH, "AT+SHREQ=\"%s\",3", URI);
 
-  if (! sendCheckReply(cmdBuff, ok_reply, 10000)) return false;
+  if (! sendCheckReply(cmdBuff, ok_reply, 10000))
+  {
+    status = false;
+    goto DISCONNECT; 
+  } 
 
+
+  // some web server doesn't send out response
   // Parse response status and size
   // Example reply --> "+SHREQ: "POST",200,452"
   uint16_t status, datalen;
@@ -2172,14 +2328,25 @@ boolean Adafruit_FONA_LTE::HTTP_POST(const char *URI, const char *body, uint8_t 
   DEBUG_PRINT("\t<--- "); DEBUG_PRINTLN(replybuffer);
 
   if (! parseReply(F("+SHREQ: \"POST\""), &status, ',', 1))
-    return false;
+  {
+    status = false;
+    goto DISCONNECT;
+
+  }
   if (! parseReply(F("+SHREQ: \"POST\""), &datalen, ',', 2))
-    return false;
+  {
+    status = false;
+    goto DISCONNECT;
+  }
 
   DEBUG_PRINT("HTTP status: "); DEBUG_PRINTLN(status);
   DEBUG_PRINT("Data length: "); DEBUG_PRINTLN(datalen);
 
-  if (status != 200) return false;
+  if (status != 200)
+  {
+    status = false;
+    goto DISCONNECT;
+  }  
 
   // Read server response
   getReply(F("AT+SHREAD=0,"), datalen, 10000);
@@ -2188,9 +2355,10 @@ boolean Adafruit_FONA_LTE::HTTP_POST(const char *URI, const char *body, uint8_t 
   readline(10000);
   DEBUG_PRINT("\t<--- "); DEBUG_PRINTLN(replybuffer); // Print out server reply
 
+DISCONNECT:
   sendCheckReply(F("AT+SHDISC"), ok_reply, 10000); // Disconnect HTTP
 
-  return true;
+  return status;
 }
 
 /********* FTP FUNCTIONS  ************************************/
@@ -2685,17 +2853,21 @@ boolean Adafruit_FONA::MQTTdisconnect(void) {
 // Parameter tags can be "CLIENTID", "URL", "KEEPTIME", "CLEANSS", "USERNAME",
 // "PASSWORD", "QOS", "TOPIC", "MESSAGE", or "RETAIN"
 boolean Adafruit_FONA_LTE::MQTT_setParameter(const char* paramTag, const char* paramValue, uint16_t port) {
-  char cmdStr[100];
+  char cmdStr[255];
 
-  if (strcmp(paramTag, "CLIENTID") == 0 || strcmp(paramTag, "URL") == 0 || strcmp(paramTag, "TOPIC") == 0 || strcmp(paramTag, "MESSAGE") == 0) {
-    if (port == 0) snprintf(cmdStr, 100, "AT+SMCONF=\"%s\",\"%s\"", paramTag, paramValue); // Quoted paramValue
-    else snprintf(cmdStr, 100, "AT+SMCONF=\"%s\",\"%s\",\"%i\"", paramTag, paramValue, port);
-    if (! sendCheckReply(cmdStr, ok_reply)) return false;
-  }
-  else {
-    snprintf(cmdStr, 100, "AT+SMCONF=\"%s\",%s", paramTag, paramValue); // Unquoted paramValue
-    if (! sendCheckReply(cmdStr, ok_reply)) return false;
-  }
+  if (port == 0) sprintf(cmdStr, "AT+SMCONF=\"%s\",\"%s\"", paramTag, paramValue); // Quoted paramValue
+  else snprintf(cmdStr,255,"AT+SMCONF=\"%s\",\"%s\",%i", paramTag, paramValue, port);
+  if (! sendCheckReply(cmdStr, ok_reply)) return false;
+
+  // if (strcmp(paramTag, "CLIENTID") == 0 || strcmp(paramTag, "URL") == 0 || strcmp(paramTag, "TOPIC") == 0 || strcmp(paramTag, "MESSAGE") == 0) {
+  //   if (port == 0) sprintf(cmdStr, "AT+SMCONF=\"%s\",\"%s\"", paramTag, paramValue); // Quoted paramValue
+  //   else sprintf(cmdStr, "AT+SMCONF=\"%s\",\"%s\",%i", paramTag, paramValue, port);
+  //   if (! sendCheckReply(cmdStr, ok_reply)) return false;
+  // }
+  // else {
+  //   sprintf(cmdStr, "AT+SMCONF=\"%s\",%s", paramTag, paramValue); // Unquoted paramValue
+  //   if (! sendCheckReply(cmdStr, ok_reply)) return false;
+  // }
   
   return true;
 }
@@ -2715,17 +2887,16 @@ boolean Adafruit_FONA_LTE::MQTT_connectionStatus(void) {
 // Subscribe to specified MQTT topic
 // QoS can be from 0-2
 boolean Adafruit_FONA_LTE::MQTT_subscribe(const char* topic, byte QoS) {
-  char cmdStr[64];
-  snprintf(cmdStr, 64, "AT+SMSUB=\"%s\",%i", topic, QoS);
-
+  char cmdStr[127];
+  snprintf(cmdStr,127,"AT+SMSUB=\"%s\",%i", topic, QoS);
   if (! sendCheckReply(cmdStr, ok_reply)) return false;
   return true;
 }
 
 // Unsubscribe from specified MQTT topic
 boolean Adafruit_FONA_LTE::MQTT_unsubscribe(const char* topic) {
-  char cmdStr[64];
-  snprintf(cmdStr, 64, "AT+SMUNSUB=\"%s\"", topic);
+  char cmdStr[127];
+  snprintf(cmdStr, 127, "AT+SMUNSUB=\"%s\"", topic);
   if (! sendCheckReply(cmdStr, ok_reply)) return false;
   return true;
 }
@@ -2735,9 +2906,8 @@ boolean Adafruit_FONA_LTE::MQTT_unsubscribe(const char* topic) {
 // QoS can be from 0-2
 // Server hold message flag can be 0 or 1
 boolean Adafruit_FONA_LTE::MQTT_publish(const char* topic, const char* message, uint16_t contentLength, byte QoS, byte retain) {
-  char cmdStr[80];
-  snprintf(cmdStr, 80, "AT+SMPUB=\"%s\",%i,%i,%i", topic, contentLength, QoS, retain);
-
+  char cmdStr[127];
+  snprintf(cmdStr,127,"AT+SMPUB=\"%s\",%i,%i,%i", topic, contentLength, QoS, retain);
   getReply(cmdStr, 2000);
   if (strstr(replybuffer, ">") == NULL) return false; // Wait for "> " to send message
   if (! sendCheckReply(message, ok_reply, 5000)) return false; // Now send the message
@@ -3363,7 +3533,9 @@ uint8_t Adafruit_FONA::readline(uint16_t timeout, boolean multiline) {
       }
       replybuffer[replyidx] = c;
       //DEBUG_PRINT(c, HEX); DEBUG_PRINT("#"); DEBUG_PRINTLN(c);
-      replyidx++;
+
+      if (++replyidx >= 254)
+        break;
     }
 
     if (timeout == 0) {

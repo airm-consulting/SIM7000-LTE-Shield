@@ -14,7 +14,7 @@ The library in this repo is an altered library built upon the original [Adafruit
 
 To see a comprehensive list of every available function in the library, please [see this wiki page](https://github.com/botletics/SIM7000-LTE-Shield/wiki/Library-Functions)
 
-To ask questions, get help, or share a project you've done using this hardware or library, please see the [Botletics community forum](https://community.botletics.com/)
+To get help or share a project you've done using this hardware or library, please see the [Botletics community forum](https://forum.botletics.com/)
 
 The following list is a summary of the things I've done so far:
 
@@ -41,7 +41,7 @@ The following list is a summary of the things I've done so far:
 - Test and document MDM9206 SDK for standalone SIM7000 operation without external microcontroller
 
 ### Completed Tasks
-- Tested SIM7070G general features: texting, reading texts, HTTP GET requests with HTTP_GET() function in Adafruit_FONA_LTE class
+- Tested SIM7070G general features with firmware 1951B14SIM7070 on SIM7070G: sending/receiving SMS, HTTP GET, HTTP POST, and GPS
 - Added SSL for TCP: opens port 8883 and allows MQTTS over SSL. Currently this feature is only for sending data. To use the function addRootCA(), set `#define SSL_FONA 1` in Adafruit_FONA.h
 - Added SIM7070G compatibility
 - Added SIM7600 compatibility

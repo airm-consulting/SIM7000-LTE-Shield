@@ -90,6 +90,16 @@
 #define FONA_CALL_RINGING 3
 #define FONA_CALL_INPROGRESS 4
 
+#define FONA_SIM_ERROR -2
+#define FONA_SIM_UNKNOWN -1
+#define FONA_SIM_READY 0
+#define FONA_SIM_PIN 1
+#define FONA_SIM_PUK 2
+#define FONA_SIM_PH_PIN 3
+#define FONA_SIM_PH_PUK 4
+#define FONA_SIM_PIN2 5
+#define FONA_SIM_PUK2 6
+
 #define SSL_FONA 0
 
 class Adafruit_FONA : public FONAStreamType {
@@ -106,7 +116,7 @@ class Adafruit_FONA : public FONAStreamType {
   void flush();
 
   // FONA 3G requirements
-  boolean setBaudrate(uint16_t baud);
+  boolean setBaudrate(uint32_t baud);
 
   // Power, battery, and ADC
   void powerOn(uint8_t FONA_PWRKEY);
@@ -124,7 +134,8 @@ class Adafruit_FONA : public FONAStreamType {
   boolean setNetLED(bool onoff, uint8_t mode = 0, uint16_t timer_on = 64, uint16_t timer_off = 3000); // AT+CNETLIGHT and AT+SLEDS commands
 
   // SIM query
-  uint8_t unlockSIM(char *pin);
+  uint8_t unlockSIM(const char *pin);
+  int8_t getPINStatus();
   uint8_t getSIMCCID(char *ccid);
   uint8_t getNetworkStatus(void);
   uint8_t getRSSI(void);
@@ -160,6 +171,7 @@ class Adafruit_FONA : public FONAStreamType {
 
   // Time
   // boolean enableNetworkTimeSync(boolean onoff);
+  uint8_t getNTPstatus();
   boolean enableNTPTimeSync(boolean onoff, FONAFlashStringPtr ntpserver=0);
   boolean getTime(char *buff, uint16_t maxlen);
   
@@ -175,6 +187,9 @@ class Adafruit_FONA : public FONAStreamType {
   void setNetworkSettings(FONAFlashStringPtr apn, FONAFlashStringPtr username=0, FONAFlashStringPtr password=0);
   boolean postData(const char *request_type, const char *URL, const char *body = "", const char *token = "", uint32_t bodylen = 0);
   boolean postData(const char *server, uint16_t port, const char *connType, const char *URL, const char *body = "");
+  int8_t getNetworkType(char *typeStringBuffer, size_t bufferLength);
+  int8_t getBearerStatus(void);
+  boolean getIPv4(char *ipStringBuffer, size_t bufferLength);
   void getNetworkInfo(void);
   bool getNetworkInfoLong(void);
 
@@ -354,7 +369,7 @@ class Adafruit_FONA_LTE : public Adafruit_FONA {
   boolean setPreferredMode(uint8_t mode);
   boolean setPreferredLTEMode(uint8_t mode);
   boolean setOperatingBand(const char * mode, uint8_t band);
-  boolean setBaudrate(uint16_t baud);
+  boolean setBaudrate(uint32_t baud);
   boolean hangUp(void);
 
   // MQTT
