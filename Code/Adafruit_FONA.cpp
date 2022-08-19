@@ -3308,8 +3308,8 @@ boolean Adafruit_FONA::HTTP_ssl(boolean onoff) {
 }
 
 boolean Adafruit_FONA_LTE::HTTP_ssl(char * ca_cert) {
-  char cmdStr[2*maxlen+17];
-  snprintf(cmdStr, 2*maxlen+17, "AT+SHSSL=1,\"%s\"", ca_cert);
+  char cmdStr[100];
+  snprintf(cmdStr, 100, "AT+SHSSL=1,\"%s\"", ca_cert);
   return sendCheckReply(cmdStr, ok_reply, 10000);
 }
 
