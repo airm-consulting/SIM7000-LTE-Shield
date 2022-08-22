@@ -2354,7 +2354,6 @@ boolean Adafruit_FONA_LTE::HTTP_POST(const char *URI, const char *body, uint8_t 
   if (status != 200 && status != 204)
   {
     result = false;
-    goto DISCONNECT;
   }  
 
   // Read server response
