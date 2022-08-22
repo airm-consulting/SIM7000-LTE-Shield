@@ -2212,7 +2212,7 @@ boolean Adafruit_FONA::postData(const char *server, uint16_t port, const char *c
 boolean Adafruit_FONA_LTE::HTTP_connect(const char *server) {
   // Set up server URL
   char urlBuff[100];
-
+  
   sendCheckReply(F("AT+SHDISC"), ok_reply, 10000); // Disconnect HTTP
 
   snprintf(urlBuff, 100, "AT+SHCONF=\"URL\",\"%s\"", server);
@@ -3308,9 +3308,13 @@ boolean Adafruit_FONA::HTTP_ssl(boolean onoff) {
 }
 
 boolean Adafruit_FONA_LTE::HTTP_ssl(char * ca_cert) {
+  if (! sendCheckReply(F("AT+CSSLCFG=\"sslversion\",1,3"), ok_reply) ) return false;
+  if (! sendCheckReply(F("AT+CSSLCFG=\"protocol\",1,1"), ok_reply) ) return false;
+  mySerial->println(F("AT+CSSLCFG=\"ctxindex\",1"));
   char cmdStr[100];
   snprintf(cmdStr, 100, "AT+SHSSL=1,\"%s\"", ca_cert);
   return sendCheckReply(cmdStr, ok_reply, 10000);
+
 }
 
 boolean Adafruit_FONA_LTE::HTTP_addHeader(const char *type, const char *value, uint16_t maxlen) {
