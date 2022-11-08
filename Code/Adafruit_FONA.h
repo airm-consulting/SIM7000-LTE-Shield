@@ -115,6 +115,8 @@ class Adafruit_FONA : public FONAStreamType {
   int peek(void);
   void flush();
 
+  
+
   // FONA 3G requirements
   boolean setBaudrate(uint32_t baud);
 
@@ -220,12 +222,12 @@ class Adafruit_FONA : public FONAStreamType {
   boolean addRootCA(const char *root_cert);
 
   // MQTT
-  boolean MQTTconnect(const char *protocol, const char *clientID, const char *username = "", const char *password = "");
-  boolean MQTTdisconnect(void);
-  boolean MQTTpublish(const char* topic, const char* message);
-  boolean MQTTsubscribe(const char* topic, byte QoS);
-  boolean MQTTunsubscribe(const char* topic);
-  boolean MQTTreceive(const char* topic, const char* buf, int maxlen);
+     boolean MQTTconnect(const char *protocol, const char *clientID, const char *username = "", const char *password = "");
+//   boolean MQTTdisconnect(void);
+//   boolean MQTTpublish(const char* topic, const char* message);
+//   boolean MQTTsubscribe(const char* topic, byte QoS);
+//   boolean MQTTunsubscribe(const char* topic);
+//   boolean MQTTreceive(const char* topic, const char* buf, int maxlen);
 
   // FTP
   boolean FTP_Connect(const char* serverIP, uint16_t port, const char* username, const char* password);
@@ -373,13 +375,28 @@ class Adafruit_FONA_LTE : public Adafruit_FONA {
   boolean hangUp(void);
 
   // MQTT
+  //Functions for SIM7600
+  #ifndef USING_SIM7000
+  boolean MQTT_Init();
+  boolean MQTT_Startup();
+  boolean MQTT_Connect(const char* username, const char* password, const char* serverAddr, uint16_t timeAlive);
+  boolean MQTT_subscribe(const char* sub_topic, uint16_t sub_topic_len, byte QoS);
+  boolean MQTT_unsubscribe(const char* sub_topic, uint16_t sub_topic_len, byte dup);
+  boolean MQTT_set_publish_topic(const char* pub_topic, uint16_t pub_topic_len);
+  boolean MQTT_publish(const char* msg, uint16_t msg_len);
+  boolean MQTT_disconnect();
+  #endif
+
+  //Functions for SIM7000
+  #ifdef USING_SIM7000
   boolean MQTT_setParameter(const char* paramTag, const char* paramValue, uint16_t port = 0);
   boolean MQTT_connect(bool yesno);
   boolean MQTT_connectionStatus(void);
   boolean MQTT_subscribe(const char* topic, byte QoS);
   boolean MQTT_unsubscribe(const char* topic);
   boolean MQTT_publish(const char* topic, const char* message, uint16_t contentLength, byte QoS, byte retain);
-  boolean MQTT_dataFormatHex(bool yesno);
+  boolean MQTT_dataFormatHex(bool yesno); 
+  #endif 
 
   // HTTP
   boolean HTTP_ssl(char * ca_cert);
