@@ -2964,18 +2964,18 @@ boolean Adafruit_FONA_LTE::MQTT_Startup()
   if (strstr(replybuffer,"+CMQTTSTART: 0") != NULL || (strstr(replybuffer,"OK") != NULL))
   {
     Serial.println("MQTT started successfully");
-    return true;
   }
   else 
   {
     Serial.println("MQTT could not start !");
     return false;
   }
+  return true;
 }
 
 boolean Adafruit_FONA_LTE::MQTT_Connect(const char* username, const char* password, const char* serverAddr, uint16_t timeAlive) 
 {
-  delay(1000);
+  delay(500);
   char cmdStr[127];
   if (!sendCheckReply(F("AT+CMQTTACCQ=0,\"AIRM\""), ok_reply,1000))
   {
@@ -2989,13 +2989,14 @@ boolean Adafruit_FONA_LTE::MQTT_Connect(const char* username, const char* passwo
 
     snprintf(cmdStr,127,"AT+CMQTTCONNECT=0,\"tcp://%s\",%i,1,\"%s\",\"%s\"",serverAddr,timeAlive,username,password);
     
-    delay(1000);
+    delay(500);
     if (!sendCheckReply(cmdStr, ok_reply,1000))
     {
       Serial.println("Could not connect to server address !");
       return false;
     }
   }
+  return true;
 }
 
 // Subscribe to specified MQTT topic
@@ -3060,14 +3061,14 @@ boolean Adafruit_FONA_LTE::MQTT_unsubscribe(const char* sub_topic, uint16_t sub_
 
 boolean Adafruit_FONA_LTE::MQTT_set_publish_topic(const char* pub_topic, uint16_t pub_topic_len) 
 {
-  delay(1000);
+  delay(500);
   char cmdStr[127];
   if(pub_topic_len > 1024)
   {
     pub_topic_len = 1024;
   }
   snprintf(cmdStr,127,"AT+CMQTTTOPIC=0,%i",pub_topic_len);
-  getReply(cmdStr, 2000);
+  getReply(cmdStr, 1000);
   delay(500);
   if (strstr(replybuffer, ">") == NULL) 
   {
@@ -3076,7 +3077,7 @@ boolean Adafruit_FONA_LTE::MQTT_set_publish_topic(const char* pub_topic, uint16_
   }
   else
   {
-    if (!sendCheckReply(pub_topic, ok_reply, 2000)) 
+    if (!sendCheckReply(pub_topic, ok_reply, 1000)) 
     {
       Serial.println("Could not set publish topic !");
       return false;
