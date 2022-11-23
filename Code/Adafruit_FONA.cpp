@@ -3020,7 +3020,7 @@ boolean Adafruit_FONA_LTE::MQTT_subscribe(const char* sub_topic, uint16_t sub_to
   }
   else
   {
-    if (!sendCheckReply(sub_topic, ok_reply, 4000)) 
+    if (!sendCheckReply(sub_topic, ok_reply, 2000)) 
     {
       Serial.println("Could not subscribe message !");
       return false;
@@ -3049,7 +3049,7 @@ boolean Adafruit_FONA_LTE::MQTT_unsubscribe(const char* sub_topic, uint16_t sub_
   }
   else
   {
-    if (!sendCheckReply(sub_topic, ok_reply, 4000)) 
+    if (!sendCheckReply(sub_topic, ok_reply, 2000)) 
     {
       Serial.println("Could not unsubscribe from topic !");
       return false;
@@ -3076,7 +3076,7 @@ boolean Adafruit_FONA_LTE::MQTT_set_publish_topic(const char* pub_topic, uint16_
   }
   else
   {
-    if (!sendCheckReply(pub_topic, ok_reply, 4000)) 
+    if (!sendCheckReply(pub_topic, ok_reply, 2000)) 
     {
       Serial.println("Could not set publish topic !");
       return false;
@@ -3087,10 +3087,10 @@ boolean Adafruit_FONA_LTE::MQTT_set_publish_topic(const char* pub_topic, uint16_
 
 boolean Adafruit_FONA_LTE::MQTT_publish(const char* msg, uint16_t msg_len)
 {
-  delay(1000);
+  delay(500);
   char cmdStr[127];
   snprintf(cmdStr,127,"AT+CMQTTPAYLOAD=0,%i",msg_len);
-  getReply(cmdStr, 2000);
+  getReply(cmdStr, 1000);
   delay(500);
    if (strstr(replybuffer, ">") == NULL) 
   {
@@ -3100,7 +3100,7 @@ boolean Adafruit_FONA_LTE::MQTT_publish(const char* msg, uint16_t msg_len)
   else
   {
     snprintf(cmdStr,127,"AT+CMQTTPUB=0,1,180");
-    if (!sendCheckReply(msg, ok_reply, 3000) || !sendCheckReply(cmdStr, ok_reply, 3000)) 
+    if (!sendCheckReply(msg, ok_reply, 2000) || !sendCheckReply(cmdStr, ok_reply, 2000)) 
     {
       Serial.println("Could not publish message !");
       return false;
@@ -3111,7 +3111,7 @@ boolean Adafruit_FONA_LTE::MQTT_publish(const char* msg, uint16_t msg_len)
 
 boolean Adafruit_FONA_LTE::MQTT_disconnect()
 {
-  delay(1000);
+  delay(500);
   bool success = true;
   getReply("AT+CMQTTDISC=0,120",1000);
   delay(500);
@@ -3121,7 +3121,7 @@ boolean Adafruit_FONA_LTE::MQTT_disconnect()
     Serial.println("Could not disconnect from server !");
   }
   delay(500);
-  if(!sendCheckReply(F("AT+CMQTTREL=0"), ok_reply, 3000))
+  if(!sendCheckReply(F("AT+CMQTTREL=0"), ok_reply, 2000))
   {
     success = false;
     Serial.println("Could not release the client !");
