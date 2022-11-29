@@ -2933,7 +2933,7 @@ boolean Adafruit_FONA_LTE::MQTT_dataFormatHex(bool yesno) {
 #endif 
 
 #ifndef USING_SIM7000
-boolean Adafruit_FONA_LTE::MQTT_Init()
+boolean Adafruit_FONA_LTE::MQTT_Init(const char *client_cert)
 {
   bool success = true;
   getReply(F("AT+CSQ"));
@@ -2954,13 +2954,24 @@ boolean Adafruit_FONA_LTE::MQTT_Init()
     Serial.println("CGREG failed");
     success = false;
   }
+  delay(200);
+  getReply(F("AT+CSSLCFG=\"sslversion\",0,4"));
+  delay(200);
+  getReply(F("AT+CSSLCFG=\"authmode\",0,1"));
+  delay(200);
+  getReply(F("AT+CCERTLIST"));
+  delay(200);
+  char cmdStr[127];
+  snprintf(cmdStr,127,"AT+CSSLCFG=\"cacert\",0,\"%s\"",client_cert);
+  getReply(F("cmdStr"));
+
   return success;
 }
 
 boolean Adafruit_FONA_LTE::MQTT_Startup() 
 {
-  delay(1000);
-  getReply("AT+CMQTTSTART",1000);
+  delay(500);
+  getReply("AT+CMQTTSTART",500);
   if (strstr(replybuffer,"+CMQTTSTART: 0") != NULL || (strstr(replybuffer,"OK") != NULL))
   {
     Serial.println("MQTT started successfully");
@@ -2977,7 +2988,7 @@ boolean Adafruit_FONA_LTE::MQTT_Connect(const char* username, const char* passwo
 {
   delay(500);
   char cmdStr[127];
-  if (!sendCheckReply(F("AT+CMQTTACCQ=0,\"AIRM\""), ok_reply,1000))
+  if (!sendCheckReply(F("AT+CMQTTACCQ=0,\"AIRM\",1"), ok_reply,1000))
   {
     Serial.println("Could not set client Id !");
     return false;
@@ -2985,16 +2996,20 @@ boolean Adafruit_FONA_LTE::MQTT_Connect(const char* username, const char* passwo
   else
   {
     Serial.println("Client Id successfully set !");
+    if(!sendCheckReply(F("AT+CMQTTSSLCFG=0,0")),ok_reply,500)
+    {
+      Serial.println(F("Couldnt set SSL context for SSL connection !"));
+    }
     Serial.println("Attempting server connection !");
-
     snprintf(cmdStr,127,"AT+CMQTTCONNECT=0,\"tcp://%s\",%i,1,\"%s\",\"%s\"",serverAddr,timeAlive,username,password);
     
-    delay(500);
-    if (!sendCheckReply(cmdStr, ok_reply,1000))
-    {
-      Serial.println("Could not connect to server address !");
-      return false;
-    }
+    delay(300);
+    getReply(cmdStr,2000);
+    // if (!sendCheckReply(cmdStr, ok_reply,1500))
+    // {
+    //   Serial.println("Could not connect to server address !");
+    //   return false;
+    // }
   }
   return true;
 }
@@ -3003,7 +3018,7 @@ boolean Adafruit_FONA_LTE::MQTT_Connect(const char* username, const char* passwo
 // QoS can be from 0-2
 boolean Adafruit_FONA_LTE::MQTT_subscribe(const char* sub_topic, uint16_t sub_topic_len, byte QoS) 
 {
-  delay(1000);
+  delay(500);
   char cmdStr[127];
   
   //max lenght from datasheet is 1024
@@ -3033,7 +3048,7 @@ boolean Adafruit_FONA_LTE::MQTT_subscribe(const char* sub_topic, uint16_t sub_to
 // Unsubscribe from specified MQTT topic
 boolean Adafruit_FONA_LTE::MQTT_unsubscribe(const char* sub_topic, uint16_t sub_topic_len, byte dup)
 {
-  delay(1000);
+  delay(500);
   char cmdStr[127];
 
   if(sub_topic_len > 1024)
