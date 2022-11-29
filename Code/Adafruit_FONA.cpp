@@ -3004,7 +3004,7 @@ boolean Adafruit_FONA_LTE::MQTT_Connect(const char* username, const char* passwo
     snprintf(cmdStr,127,"AT+CMQTTCONNECT=0,\"tcp://%s\",%i,1,\"%s\",\"%s\"",serverAddr,timeAlive,username,password);
     
     delay(300);
-    getReply(F("cmdStr"),2000);
+    getReply(cmdStr,2000);
     // if (!sendCheckReply(cmdStr, ok_reply,1500))
     // {
     //   Serial.println("Could not connect to server address !");
@@ -3036,7 +3036,7 @@ boolean Adafruit_FONA_LTE::MQTT_subscribe(const char* sub_topic, uint16_t sub_to
   }
   else
   {
-    getReply(F("sub_topic"),2000);
+    getReply(sub_topic,2000);
     delay(1000);
     Serial.println(replybuffer);
     // if (!sendCheckReply(sub_topic, ok_reply, 2000)) 
