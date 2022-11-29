@@ -2933,7 +2933,7 @@ boolean Adafruit_FONA_LTE::MQTT_dataFormatHex(bool yesno) {
 #endif 
 
 #ifndef USING_SIM7000
-boolean Adafruit_FONA_LTE::MQTT_Init(const char *client_cert)
+boolean Adafruit_FONA_LTE::MQTT_Init(const char* client_cert)
 {
   bool success = true;
   getReply(F("AT+CSQ"));
