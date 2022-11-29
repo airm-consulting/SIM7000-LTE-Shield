@@ -3036,11 +3036,14 @@ boolean Adafruit_FONA_LTE::MQTT_subscribe(const char* sub_topic, uint16_t sub_to
   }
   else
   {
-    if (!sendCheckReply(sub_topic, ok_reply, 2000)) 
-    {
-      Serial.println("Could not subscribe message !");
-      return false;
-    }
+    getReply(F(sub_topic),2000);
+    delay(1000);
+    Serial.println(replybuffer);
+    // if (!sendCheckReply(sub_topic, ok_reply, 2000)) 
+    // {
+    //   Serial.println("Could not subscribe message !");
+    //   return false;
+    // }
   }
   return true;
 }
