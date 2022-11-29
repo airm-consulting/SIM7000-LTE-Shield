@@ -2963,7 +2963,7 @@ boolean Adafruit_FONA_LTE::MQTT_Init(const char* client_cert)
   delay(200);
   char cmdStr[127];
   snprintf(cmdStr,127,"AT+CSSLCFG=\"cacert\",0,\"%s\"",client_cert);
-  getReply(F("cmdStr"));
+  getReply(cmdStr);
 
   return success;
 }
