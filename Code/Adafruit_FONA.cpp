@@ -2996,7 +2996,7 @@ boolean Adafruit_FONA_LTE::MQTT_Connect(const char* username, const char* passwo
   else
   {
     Serial.println("Client Id successfully set !");
-    if(!sendCheckReply(F("AT+CMQTTSSLCFG=0,0")),ok_reply,500)
+    if(!sendCheckReply(F("AT+CMQTTSSLCFG=0,0"),ok_reply,500))
     {
       Serial.println(F("Couldnt set SSL context for SSL connection !"));
     }
