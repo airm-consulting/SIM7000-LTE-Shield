@@ -3094,7 +3094,7 @@ boolean Adafruit_FONA_LTE::MQTT_set_publish_topic(const char* pub_topic, uint16_
   return true;
 }
 
-boolean Adafruit_FONA_LTE::MQTT_publish(const char* msg, uint16_t msg_len)
+boolean Adafruit_FONA_LTE::MQTT_publish(const char* msg, uint16_t msg_len, byte Qos)
 {
   delay(500);
   char cmdStr[127];
@@ -3108,7 +3108,7 @@ boolean Adafruit_FONA_LTE::MQTT_publish(const char* msg, uint16_t msg_len)
   }
   else
   {
-    snprintf(cmdStr,127,"AT+CMQTTPUB=0,1,180");
+    snprintf(cmdStr,127,"AT+CMQTTPUB=0,%i,180",Qos);
     if (!sendCheckReply(msg, ok_reply, 2000) || !sendCheckReply(cmdStr, ok_reply, 2000)) 
     {
       Serial.println("Could not publish message !");

@@ -383,7 +383,7 @@ class Adafruit_FONA_LTE : public Adafruit_FONA {
   boolean MQTT_subscribe(const char* sub_topic, uint16_t sub_topic_len, byte QoS);
   boolean MQTT_unsubscribe(const char* sub_topic, uint16_t sub_topic_len, byte dup);
   boolean MQTT_set_publish_topic(const char* pub_topic, uint16_t pub_topic_len);
-  boolean MQTT_publish(const char* msg, uint16_t msg_len);
+  boolean MQTT_publish(const char* msg, uint16_t msg_len, byte Qos);
   boolean MQTT_disconnect();
   #endif
 
