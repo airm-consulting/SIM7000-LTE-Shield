@@ -2984,11 +2984,12 @@ boolean Adafruit_FONA_LTE::MQTT_Startup()
   return true;
 }
 
-boolean Adafruit_FONA_LTE::MQTT_Connect(const char* username, const char* password, const char* serverAddr, uint16_t timeAlive) 
+boolean Adafruit_FONA_LTE::MQTT_Connect(const char* username, const char* password, const char* serverAddr, uint16_t timeAlive, const char* clientId) 
 {
   delay(500);
   char cmdStr[127];
-  if (!sendCheckReply(F("AT+CMQTTACCQ=0,\"AIRM\",1"), ok_reply,1000))
+  snprintf(cmdStr,127,"AT+CMQTTACCQ=0,\"%s\",1",clientId);
+  if (!sendCheckReply(cmdStr, ok_reply,1000))
   {
     Serial.println("Could not set client Id !");
     return false;
@@ -3000,16 +3001,11 @@ boolean Adafruit_FONA_LTE::MQTT_Connect(const char* username, const char* passwo
     {
       Serial.println(F("Couldnt set SSL context for SSL connection !"));
     }
+    memset(cmdStr,0,sizeof(cmdStr));
     Serial.println("Attempting server connection !");
-    snprintf(cmdStr,127,"AT+CMQTTCONNECT=0,\"tcp://%s\",%i,1,\"%s\",\"%s\"",serverAddr,timeAlive,username,password);
-    
+    snprintf(cmdStr,127,"AT+CMQTTCONNECT=0,\"tcp://%s\",%i,0,\"%s\",\"%s\"",serverAddr,timeAlive,username,password);
     delay(300);
     getReply(cmdStr,2000);
-    // if (!sendCheckReply(cmdStr, ok_reply,1500))
-    // {
-    //   Serial.println("Could not connect to server address !");
-    //   return false;
-    // }
   }
   return true;
 }
@@ -3026,7 +3022,7 @@ boolean Adafruit_FONA_LTE::MQTT_subscribe(const char* sub_topic, uint16_t sub_to
   {
     sub_topic_len = 1024;
   }
-  snprintf(cmdStr,127,"AT+CMQTTSUBTOPIC=0,%i,%i", sub_topic_len, QoS);
+  snprintf(cmdStr,127,"AT+CMQTTSUB=0,%i,%i", sub_topic_len, QoS);
   getReply(cmdStr, 2000);
   delay(1000);
   if (strstr(replybuffer, ">") == NULL) 
@@ -3038,12 +3034,6 @@ boolean Adafruit_FONA_LTE::MQTT_subscribe(const char* sub_topic, uint16_t sub_to
   {
     getReply(sub_topic,2000);
     delay(1000);
-    Serial.println(replybuffer);
-    // if (!sendCheckReply(sub_topic, ok_reply, 2000)) 
-    // {
-    //   Serial.println("Could not subscribe message !");
-    //   return false;
-    // }
   }
   return true;
 }

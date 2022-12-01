@@ -379,7 +379,7 @@ class Adafruit_FONA_LTE : public Adafruit_FONA {
   #ifndef USING_SIM7000
   boolean MQTT_Init(const char* client_cert);
   boolean MQTT_Startup();
-  boolean MQTT_Connect(const char* username, const char* password, const char* serverAddr, uint16_t timeAlive);
+  boolean MQTT_Connect(const char* username, const char* password, const char* serverAddr, uint16_t timeAlive, const char* clientId);
   boolean MQTT_subscribe(const char* sub_topic, uint16_t sub_topic_len, byte QoS);
   boolean MQTT_unsubscribe(const char* sub_topic, uint16_t sub_topic_len, byte dup);
   boolean MQTT_set_publish_topic(const char* pub_topic, uint16_t pub_topic_len);
