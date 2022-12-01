@@ -298,6 +298,7 @@ class Adafruit_FONA : public FONAStreamType {
   void flushInput();
   uint16_t readRaw(uint16_t b);
   uint8_t readline(uint16_t timeout = FONA_DEFAULT_TIMEOUT_MS, boolean multiline = false);
+  uint8_t readMultiLine(uint16_t timeout = FONA_DEFAULT_TIMEOUT_MS);
   uint8_t getReply(const char *send, uint16_t timeout = FONA_DEFAULT_TIMEOUT_MS);
   uint8_t getReply(FONAFlashStringPtr send, uint16_t timeout = FONA_DEFAULT_TIMEOUT_MS);
   uint8_t getReply(FONAFlashStringPtr prefix, char *suffix, uint16_t timeout = FONA_DEFAULT_TIMEOUT_MS);
