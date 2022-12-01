@@ -3800,7 +3800,7 @@ uint8_t Adafruit_FONA::getReply(const char *send, uint16_t timeout) {
   return l;
 }
 
-uint8_t Adafruit_FONA::readMultiLine(uint16_t timeout)
+uint8_t Adafruit_FONA_LTE::readMultiLine(uint16_t timeout)
 {
   //flushInput();
   uint8_t l = readline(timeout);
