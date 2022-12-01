@@ -298,7 +298,6 @@ class Adafruit_FONA : public FONAStreamType {
   void flushInput();
   uint16_t readRaw(uint16_t b);
   uint8_t readline(uint16_t timeout = FONA_DEFAULT_TIMEOUT_MS, boolean multiline = false);
-  uint8_t readMultiLine(uint16_t timeout = FONA_DEFAULT_TIMEOUT_MS);
   uint8_t getReply(const char *send, uint16_t timeout = FONA_DEFAULT_TIMEOUT_MS);
   uint8_t getReply(FONAFlashStringPtr send, uint16_t timeout = FONA_DEFAULT_TIMEOUT_MS);
   uint8_t getReply(FONAFlashStringPtr prefix, char *suffix, uint16_t timeout = FONA_DEFAULT_TIMEOUT_MS);
@@ -386,6 +385,7 @@ class Adafruit_FONA_LTE : public Adafruit_FONA {
   boolean MQTT_set_publish_topic(const char* pub_topic, uint16_t pub_topic_len);
   boolean MQTT_publish(const char* msg, uint16_t msg_len, byte Qos);
   boolean MQTT_disconnect();
+  uint8_t readMultiLine(uint16_t timeout = FONA_DEFAULT_TIMEOUT_MS);
   #endif
 
   //Functions for SIM7000
