@@ -3769,7 +3769,7 @@ uint8_t Adafruit_FONA::readline(uint16_t timeout, boolean multiline) {
       }
       replybuffer[replyidx] = c;
       //DEBUG_PRINT(c, HEX); DEBUG_PRINT("#"); DEBUG_PRINTLN(c);
-
+    
       if (++replyidx >= 254)
         break;
     }
@@ -3800,12 +3800,12 @@ uint8_t Adafruit_FONA::getReply(const char *send, uint16_t timeout) {
   return l;
 }
 
-uint8_t Adafruit_FONA_LTE::readMultiLine(uint16_t timeout)
+char* Adafruit_FONA_LTE::readMultiLine(uint16_t timeout)
 {
   //flushInput();
   uint8_t l = readline(timeout);
   DEBUG_PRINT (F("\t<--- ")); DEBUG_PRINTLN(replybuffer);
-  return l;
+  return replybuffer;
 }
 
 uint8_t Adafruit_FONA::getReply(FONAFlashStringPtr send, uint16_t timeout) {
