@@ -3803,8 +3803,6 @@ uint8_t Adafruit_FONA::getReply(const char *send, uint16_t timeout) {
 char* Adafruit_FONA_LTE::readSingleLine(uint16_t timeout)
 {
   uint8_t l = readline(timeout);
-  Serial.println(l);
-  Serial.println(replybuffer);
   DEBUG_PRINT (F("\t<--- ")); DEBUG_PRINTLN(replybuffer);
   return replybuffer;
 }
@@ -3812,8 +3810,6 @@ char* Adafruit_FONA_LTE::readSingleLine(uint16_t timeout)
 char* Adafruit_FONA_LTE::readMultipleLines(uint16_t timeout)
 {
   uint8_t l = readline(timeout,true);
-  Serial.println(l);
-  Serial.println(replybuffer);
   DEBUG_PRINT (F("\t<--- ")); DEBUG_PRINTLN(replybuffer);
   return replybuffer;
 }
