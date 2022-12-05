@@ -3803,13 +3803,19 @@ uint8_t Adafruit_FONA::getReply(const char *send, uint16_t timeout) {
 char* Adafruit_FONA_LTE::readMultiLine(uint16_t timeout)
 {
   uint8_t l = readline(timeout);
+  Serial.println(l);
+  Serial.println(replybuffer);
   DEBUG_PRINT (F("\t<--- ")); DEBUG_PRINTLN(replybuffer);
-  char* reply_buffer_temp = replybuffer;
-  if(l != 0)
-  {
-    flushInput();
-  }
-  return reply_buffer_temp;
+  return replybuffer;
+}
+
+char* Adafruit_FONA_LTE::readMultipleLine(uint16_t timeout)
+{
+  uint8_t l = readline(timeout,true);
+  Serial.println(l);
+  Serial.println(replybuffer);
+  DEBUG_PRINT (F("\t<--- ")); DEBUG_PRINTLN(replybuffer);
+  return replybuffer;
 }
 
 uint8_t Adafruit_FONA::getReply(FONAFlashStringPtr send, uint16_t timeout) {

@@ -386,6 +386,7 @@ class Adafruit_FONA_LTE : public Adafruit_FONA {
   boolean MQTT_publish(const char* msg, uint16_t msg_len, byte Qos);
   boolean MQTT_disconnect();
   char* readMultiLine(uint16_t timeout = (FONA_DEFAULT_TIMEOUT_MS*2));
+  char* readMultipleLine(uint16_t timeout=(FONA_DEFAULT_TIMEOUT_MS*2));
   #endif
 
   //Functions for SIM7000
