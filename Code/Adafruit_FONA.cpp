@@ -3757,7 +3757,7 @@ uint8_t Adafruit_FONA::readline(uint16_t timeout, boolean multiline) {
 
     while(mySerial->available()) {
       char c =  mySerial->read();
-      if (c == '\r') continue;
+      if (!multiline && c == '\r') continue;
       if (c == 0xA) {
         if (replyidx == 0)   // the first 0x0A is ignored
           continue;
