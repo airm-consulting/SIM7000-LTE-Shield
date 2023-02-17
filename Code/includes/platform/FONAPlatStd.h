@@ -72,5 +72,6 @@ typedef const __FlashStringHelper *	FONAFlashStringPtr;
 #define prog_char_strlen(a)						strlen_P((a))
 #define prog_char_strcpy(to, fromprogmem)		strcpy_P((to), (fromprogmem))
 //define prog_char_strncpy(to, from, len)		strncpy_P((to), (fromprogmem), (len))
+#define prog_char_snprintf(a, b, c, ...) snprintf_P((a), (b), (prog_char *) F(c), __VA_ARGS__)
 
 #endif /* ADAFRUIT_FONA_LIBRARY_SRC_INCLUDES_PLATFORM_FONAPLATSTD_H_ */
