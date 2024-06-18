@@ -28,7 +28,9 @@
  * DebugStream set in the appropriate platform/ header.
  */
 
+#ifdef USING_USB_SERIAL_DEBUG
 #define ADAFRUIT_FONA_DEBUG
+#endif
 
 
 #endif /* ADAFRUIT_FONA_LIBRARY_SRC_INCLUDES_FONACONFIG_H_ */
