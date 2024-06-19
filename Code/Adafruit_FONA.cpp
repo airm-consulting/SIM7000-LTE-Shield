@@ -926,13 +926,13 @@ boolean Adafruit_FONA::sendUSSD(char *ussdmsg, char *ussdbuff, uint16_t maxlen, 
 
 /********* TIME **********************************************************/
 
-/*
-boolean Adafruit_FONA::enableNetworkTimeSync(boolean onoff) {
+boolean Adafruit_FONA::enableAutomaticTimeSync(boolean onoff) {
+  sendCheckReply(F("AT+CTZR=0"), ok_reply);
   if (onoff) {
-    if (! sendCheckReply(F("AT+CLTS=1"), ok_reply))
+    if (! sendCheckReply(F("AT+CTZU=1"), ok_reply))
       return false;
   } else {
-    if (! sendCheckReply(F("AT+CLTS=0"), ok_reply))
+    if (! sendCheckReply(F("AT+CTZU=0"), ok_reply))
       return false;
   }
 
@@ -940,7 +940,6 @@ boolean Adafruit_FONA::enableNetworkTimeSync(boolean onoff) {
 
   return true;
 }
-*/
 
 // Returns the status of the NTP module:
 // 1 Network time synchronization is successful
