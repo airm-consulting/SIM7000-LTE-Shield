@@ -964,8 +964,11 @@ uint8_t Adafruit_FONA::getNTPstatus()
 
 boolean Adafruit_FONA::enableNTPTimeSync(boolean onoff, FONAFlashStringPtr ntpserver) {
     if (onoff) {
-        if (! sendCheckReply(F("AT+CNTPCID=1"), ok_reply))
-            return false;
+        if (_type < SIM7500)
+        {
+            if (! sendCheckReply(F("AT+CNTPCID=1"), ok_reply))
+                return false;
+        }
 
         mySerial->print(F("AT+CNTP=\""));
         if (ntpserver != 0) {
