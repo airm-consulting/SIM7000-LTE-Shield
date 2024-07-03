@@ -1121,7 +1121,15 @@ boolean Adafruit_FONA_3G::enableGPS(boolean onoff) {
 */
 
 int8_t Adafruit_FONA::GPSstatus(void) {
-    if (_type == SIM808_V2 || _type == SIM7000 || _type == SIM7070) {
+    if (_type == SIM7500 || _type == SIM7600) {
+        getReply(F("AT+CGNSSINFO"));
+        char *p = prog_char_strstr(replybuffer, (prog_char*)F("+CGNSSINFO:"));
+        if (p == 0) return -1;
+        readline();
+        if (p[0] == '2') return 2;
+        if (p[0] == '3') return 3;
+    }
+    else if (_type == SIM808_V2 || _type == SIM7000 || _type == SIM7070) {
         // 808 V2 uses GNS commands and doesn't have an explicit 2D/3D fix status.
         // Instead just look for a fix and if found assume it's a 3D fix.
         getReply(F("AT+CGNSINF"));
@@ -1137,7 +1145,7 @@ int8_t Adafruit_FONA::GPSstatus(void) {
         if (p[0] == '1') return 3;
         else return 1;
     }
-    if (_type == SIM5320A || _type == SIM5320E) {
+    else if (_type == SIM5320A || _type == SIM5320E) {
         // FONA 3G doesn't have an explicit 2D/3D fix status.
         // Instead just look for a fix and if found assume it's a 3D fix.
         getReply(F("AT+CGPSINFO"));
