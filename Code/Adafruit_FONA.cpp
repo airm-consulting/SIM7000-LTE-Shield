@@ -1125,6 +1125,7 @@ int8_t Adafruit_FONA::GPSstatus(void) {
         getReply(F("AT+CGNSSINFO"));
         char *p = prog_char_strstr(replybuffer, (prog_char*)F("+CGNSSINFO:"));
         if (p == 0) return -1;
+        p+=12;
         readline();
         if (p[0] == '2') return 2;
         if (p[0] == '3') return 3;
@@ -1205,10 +1206,10 @@ boolean Adafruit_FONA::getGPS(float *lat, float *lon, float *speed_kph, float *h
     char gpsbuffer[120];
 
     // we need at least a 2D fix
-    if (_type < SIM7000) { // SIM7500 doesn't support AT+CGPSSTATUS? command
+    //if (_type < SIM7000) { // SIM7500 doesn't support AT+CGPSSTATUS? command
         if (GPSstatus() < 2)
             return false;
-    }
+    //}
 
     // grab the mode 2^5 gps csv from the sim808
     uint8_t res_len = getGPS(32, gpsbuffer, 120);
