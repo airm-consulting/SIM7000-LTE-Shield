@@ -2944,37 +2944,72 @@ boolean Adafruit_FONA_LTE::MQTT_dataFormatHex(bool yesno) {
 #endif
 
 #ifndef USING_SIM7000
-boolean Adafruit_FONA_LTE::MQTT_Init(const char* client_cert)
+boolean Adafruit_FONA_LTE::MQTT_Init(const char* ca, const char* client_cert, const char* client_key)
 {
     bool success = true;
-    getReply(F("AT+CSQ"));
-    delay(200);
+    char cmdStr[127];
+    // getReply(F("AT+CSQ"));
+    // delay(200);
 
-    getReply(F("AT+CREG?"));
-    delay(200);
-    if(prog_char_strstr(replybuffer, (prog_char *) F("+CREG: 0,1")) == NULL)
-    {
-        DEBUG_PRINTLN(F("CREG failed"));
-        success = false;
-    }
+    // getReply(F("AT+CREG?"));
+    // delay(200);
+    // if(prog_char_strstr(replybuffer, (prog_char *) F("+CREG: 0,1")) == NULL)
+    // {
+    //     DEBUG_PRINTLN(F("CREG failed"));
+    //     success = false;
+    // }
 
-    getReply(F("AT+CGREG?"));
-    delay(200);
-    if(prog_char_strstr(replybuffer, (prog_char *) F("+CGREG: 0,1")) == NULL)
-    {
-        DEBUG_PRINTLN(F("CGREG failed"));
-        success = false;
-    }
-    delay(200);
+    // getReply(F("AT+CGREG?"));
+    // delay(200);
+    // if(prog_char_strstr(replybuffer, (prog_char *) F("+CGREG: 0,1")) == NULL)
+    // {
+    //     DEBUG_PRINTLN(F("CGREG failed"));
+    //     success = false;
+    // }
+    // delay(200);
     getReply(F("AT+CSSLCFG=\"sslversion\",0,4"));
     delay(200);
-    getReply(F("AT+CSSLCFG=\"authmode\",0,1"));
+    if (ca && client_cert && client_key)
+    {
+        getReply(F("AT+CSSLCFG=\"authmode\",0,2"));
+        memset(cmdStr, 0, 127);
+        prog_char_snprintf(cmdStr,127,"AT+CSSLCFG=\"cacert\",0,\"%s\"",ca);
+        getReply(cmdStr);
+        delay(200);
+        memset(cmdStr, 0, 127);
+        prog_char_snprintf(cmdStr,127,"AT+CSSLCFG=\"clientcert\",0,\"%s\"",client_cert);
+        getReply(cmdStr);
+        delay(200);
+        memset(cmdStr, 0, 127);
+        prog_char_snprintf(cmdStr,127,"AT+CSSLCFG=\"clientkey\",0,\"%s\"",client_key);
+        getReply(cmdStr);
+        delay(200);
+    }
+    else if (client_cert && client_key)
+    {
+        getReply(F("AT+CSSLCFG=\"authmode\",0,3"));
+        memset(cmdStr, 0, 127);
+        prog_char_snprintf(cmdStr,127,"AT+CSSLCFG=\"clientcert\",0,\"%s\"",client_cert);
+        getReply(cmdStr);
+        delay(200);
+        memset(cmdStr, 0, 127);
+        prog_char_snprintf(cmdStr,127,"AT+CSSLCFG=\"clientkey\",0,\"%s\"",client_key);
+        getReply(cmdStr);
+    }
+    else if (ca)
+    {
+        getReply(F("AT+CSSLCFG=\"authmode\",0,1"));
+        memset(cmdStr, 0, 127);
+        prog_char_snprintf(cmdStr,127,"AT+CSSLCFG=\"cacert\",0,\"%s\"",ca);
+        getReply(cmdStr);
+    }
+    else
+    {
+        getReply(F("AT+CSSLCFG=\"authmode\",0,0"));
+    }
     delay(200);
-    getReply(F("AT+CCERTLIST"));
-    delay(200);
-    char cmdStr[127];
-    prog_char_snprintf(cmdStr,127,"AT+CSSLCFG=\"cacert\",0,\"%s\"",client_cert);
-    getReply(cmdStr);
+    // getReply(F("AT+CCERTLIST"));
+    // delay(200);
 
     return success;
 }
@@ -3014,7 +3049,14 @@ boolean Adafruit_FONA_LTE::MQTT_Connect(const char* username, const char* passwo
         }
         memset(cmdStr,0,sizeof(cmdStr));
         DEBUG_PRINTLN(F("Attempting server connection !"));
-        prog_char_snprintf(cmdStr,127,"AT+CMQTTCONNECT=0,\"tcp://%s\",%i,0,\"%s\",\"%s\"",serverAddr,timeAlive,username,password);
+        if (username && password)
+        {
+            prog_char_snprintf(cmdStr,127,"AT+CMQTTCONNECT=0,\"tcp://%s\",%i,0,\"%s\",\"%s\"",serverAddr,timeAlive,username,password);
+        }
+        else
+        {
+            prog_char_snprintf(cmdStr,127,"AT+CMQTTCONNECT=0,\"tcp://%s\",%i,0",serverAddr,timeAlive);
+        }
         delay(300);
         getReply(cmdStr,2000);
     }
