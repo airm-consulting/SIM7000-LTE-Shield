@@ -3008,6 +3008,9 @@ boolean Adafruit_FONA_LTE::MQTT_Init(const char* ca, const char* client_cert, co
         getReply(F("AT+CSSLCFG=\"authmode\",0,0"));
     }
     delay(200);
+    getReply(F("AT+CSSLCFG=\"enableSNI\",0,0"));
+    getReply(F("AT+CSSLCFG=\"ciphersuites\",0,0xFFFF"));
+
     // getReply(F("AT+CCERTLIST"));
     // delay(200);
 
