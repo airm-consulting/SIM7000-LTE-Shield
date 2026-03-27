@@ -1037,7 +1037,7 @@ boolean Adafruit_FONA::readRTC(uint8_t *year, uint8_t *month, uint8_t *date, uin
     p+=3;
     reply = atoi(p);
     *sec = (uint8_t) reply;
-    p+=3;
+    p+=2;
     reply = atoi(p);
     *tz = reply;
 
